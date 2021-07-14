@@ -32,11 +32,20 @@ app.get('/restaurants', async (req, res) => {
     res.json(allRestaurants)
 })
 //client makes a request to the webserver
-app.get('/flipcoin', (req, res) => {
-    //define a function that returns heads or tails
-    const coinflip = !Math.floor(Math.random() * 2) ? 'Heads' : 'Tails' // 1 -> heads truthy : 0 ->tails bc falsy
-   //server is returning a response
-    res.send(coinflip)
+// app.get('/flipcoin', (req, res) => {
+//     //define a function that returns heads or tails
+//     const coinflip = !Math.floor(Math.random() * 2) ? 'Heads' : 'Tails' // 1 -> heads truthy : 0 ->tails bc falsy
+//    //server is returning a response
+//     res.send(coinflip)
+// })
+
+app.get("/flipcoin", (request, response) => {
+    const randomNumber = Math.floor(Math.random() * 2);
+    if(randomNumber === 1){
+        response.send("heads");
+    }else{
+        response.send("tails");
+    }
 })
 
 
