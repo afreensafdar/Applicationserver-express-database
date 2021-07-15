@@ -74,11 +74,11 @@ app.get('/restaurants/:id', async (req, res) => {
 })
 
     //eager loading! We can nest include blocks, to fetch associations of associations
-    const restaurant = await Restaurant.findByPk(req.params.id, {include : {
-        model : Menu,
-        include: Item
-    }});
-    res.json({ restaurant })
+    // const restaurant = await Restaurant.findByPk(req.params.id, {include : {
+    //     model : Menu,
+    //     include: Item
+    // }});
+    // res.json({ restaurant })
 
 
 app.get('/menus/:id', async (req, res) => {
@@ -127,7 +127,7 @@ app.delete('/restaurants/:id', async (req, res) => {
 })
 
 // Update a restaurant
-app.put("restaurants/:id", async (req, res) => {
+app.put("/restaurants/:id", async (req, res) => {
 	let updated = await Restaurant.update(req.body, {
 		where : {id : req.params.id} // Update a restaurant where the id matches, based on req.body
 	})
