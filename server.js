@@ -138,7 +138,8 @@ app.post('/restaurants', [
     .trim()
     .escape()
     .isLength({max :20 }).withMessage('Name must be maximum 20 chars long')
-    .isAlpha().withMessage("Name must be only Alphabetical chars"),
+    .isAlpha().withMessage("Name must be only Alphabetical chars")
+    .isWhitelisted(["L","S","M","G"]),
 
     check('location')
     .not()
@@ -150,10 +151,6 @@ app.post('/restaurants', [
     check('cuisine')
     .not()
     .isEmpty().withMessage("cuisine cannot be empty")
-    .trim()
-    .escape()
-    .withMessage("Enter the cuisine")
-    
     ], async (req, res) => {
     const errors = validationResult(req)
     console.log("errors",errors)
@@ -196,9 +193,41 @@ app.patch("/restaurants/:id", async (req, res) => {
 
 //Menu -postman crud operations
 
-app.post('/menus', async (req, res) => {
-	let newMenu = await Menu.create(req.body);
-	res.send('Menu added Successfully!')
+// app.post('/menus', async (req, res) => {
+// 	let newMenu = await Menu.create(req.body);
+// 	res.send('Menu added Successfully!')
+// })
+
+//Express-Validator for Menu
+//add validation to your route.
+app.post('/menus', [
+    check('title')
+    .not()
+    .isString()
+    .isEmpty().withMessage("title cannot be empty")
+    .trim()
+    .escape()
+    .isLength({max :20 }).withMessage('title must be maximum 20 chars long')
+    .isAlpha().withMessage("title must be only Alphabetical chars"),
+
+    check('RestaurantId')
+    .isLength({max:10}).withMessage("Id must be maximum 30 chars")
+    .not()
+    .isEmpty().withMessage("Id cannot be empty")
+    .isNumeric().withMessage("Must be a number")
+    .isWhitelisted(["1","2","3","4"])
+    .blacklist('@','#', '\\')
+    
+
+    ], async (req, res) => {
+    const errors = validationResult(req)
+    console.log("errors",errors)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    } else {
+        let newMenu=await Menu.create(req.body);
+        res.send("Menu Created")
+    }
 })
 
 app.delete('/menus/:id', async (req, res) => {
@@ -224,9 +253,51 @@ app.patch("/menus/:id", async (req, res) => {
 
 //Item crud operations
 
-app.post('/items', async (req, res) => {
-	let newItem = await Item.create(req.body);
-	res.send('Item added Successfully!')
+// app.post('/items', async (req, res) => {
+// 	let newItem = await Item.create(req.body);
+// 	res.send('Item added Successfully!')
+// })
+
+//Express-Validator for Menu
+//add validation to your route, to escape any HTML characters in the restaurant name field.
+app.post('/items', [
+    check('name')
+    .not()
+    .isEmpty().withMessage("`name cannot be empty")
+    .isLength({max :20 }).withMessage('name must be maximum 20 chars long'),
+
+    check('image')
+    .not()
+    .isEmpty().withMessage("name cannot be empty")
+    .isURL({ require_protocol: true }).withMessage("invalid url"),
+
+    check('price')
+    .not()
+    .isEmpty().withMessage("price cannot be empty")
+    .isFloat().withMessage("must be a valid price")
+    .isLength({max:3}).withMessage("Id must be maximum 3 chars"),
+
+    check('vegetarian')
+    .not()
+    .isEmpty().withMessage("Cannot be empty")
+    .isBoolean(),
+
+    check('MenuId')
+    .not()
+    .isEmpty().withMessage("Id cannot be empty")
+    .isNumeric().withMessage("Must be a number")
+    .isLength({max:5}).withMessage("Id must be maximum 5 chars")
+
+
+    ], async (req, res) => {
+    const errors = validationResult(req)
+    console.log("errors",errors)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    } else {
+        let newItem=await Item.create(req.body);
+        res.send("Item Created")
+    }
 })
 
 app.delete('/items/:id', async (req, res) => {
