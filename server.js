@@ -10,6 +10,8 @@ const port = 3000;
 app.use(express.static(path.join(__dirname, 'public')))
 
 // Add this boilerplate middleware to successfully use req.body
+//Express can read JSON and URL encoded request bodies.
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 //will add routes
@@ -126,7 +128,9 @@ app.delete('/restaurants/:id', async (req, res) => {
 	res.send("Restaurant Deleted!!")
 })
 
-// Update a restaurant
+// Update a restaurant-put 
+//in postman body-raw and json
+//or body -x-www-form-urlended and enter key-values
 app.put("/restaurants/:id", async (req, res) => {
 	let updated = await Restaurant.update(req.body, {
 		where : {id : req.params.id} // Update a restaurant where the id matches, based on req.body
@@ -134,6 +138,15 @@ app.put("/restaurants/:id", async (req, res) => {
 	res.send("Restaurant Updated!!")
 })
 
+//put is update all the model or entity properties completely whereas patch is to update a particular property like only name
+
+// Update a restaurant-patch
+app.patch("/restaurants/:id", async (req, res) => {
+	let updated = await Restaurant.update(req.body, {
+		where : {id : req.params.id} // Update a restaurant where the id matches, based on req.body
+	})
+	res.send("Restaurant Updated Successfully!!")
+})
 
 //Q: What will our server be doing? listen to client request based on port 3000 created.
 app.listen(port, () => {
