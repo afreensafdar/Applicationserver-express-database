@@ -1,4 +1,5 @@
 const express = require("express");
+const { check, validationResult } = require('express-validator'); //Express Validator
 const path = require('path'); //a node native module
 const {Restaurant,Menu,Item} = require('./models/index');
 
@@ -75,12 +76,14 @@ app.get('/restaurants/:id', async (req, res) => {
 	res.json({restaurant})
 })
 
-    //eager loading! We can nest include blocks, to fetch associations of associations
-    // const restaurant = await Restaurant.findByPk(req.params.id, {include : {
-    //     model : Menu,
-    //     include: Item
-    // }});
-    // res.json({ restaurant })
+    //eager loading! We can nest include blocks, to fetch associations of associations restuarant-menu-item
+    app.get('/restaurants/:id', async (req, res) => {
+    const restaurant = await Restaurant.findByPk(req.params.id, {include : {
+        model : Menu,
+        include: Item
+    }});
+    res.json({ restaurant })
+})
 
 
 app.get('/menus/:id', async (req, res) => {
@@ -114,9 +117,52 @@ app.get('/:message1/:message2', (req, res) => {
 //testing on postman
 
 // Add new restaurant
-app.post('/restaurants', async (req, res) => {
-	let newRestaurant = await Restaurant.create(req.body);
-	res.send('Restaurant Created Successfully!')
+// app.post('/restaurants', async (req, res) => {
+// 	let newRestaurant = await Restaurant.create(req.body);
+// 	res.send('Restaurant Created Successfully!')
+// })
+
+// app.post('/restaurants', (req, res) => {    
+//     console.log(req.body);
+//     // use the data in req.body to add a new restaurant to the database
+//     res.sendStatus(201);
+// })
+
+
+//Express-Validator
+//add validation to your route, to escape any HTML characters in the restaurant name field.
+app.post('/restaurants', [
+    check('name')
+    .not()
+    .isEmpty().withMessage("name cannot be empty")
+    .trim()
+    .escape()
+    .isLength({max :20 }).withMessage('Name must be maximum 20 chars long')
+    .isAlpha().withMessage("Name must be only Alphabetical chars"),
+
+    check('location')
+    .not()
+    .isEmpty().withMessage("location cannot be empty")
+    .trim()
+    .escape()
+    .isLength({min:3}).withMessage("Location must be atleast 3 chars"),
+
+    check('cuisine')
+    .not()
+    .isEmpty().withMessage("cuisine cannot be empty")
+    .trim()
+    .escape()
+    .withMessage("Enter the cuisine")
+    
+    ], async (req, res) => {
+    const errors = validationResult(req)
+    console.log("errors",errors)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    } else {
+        let newRestaurant=await Restaurant.create(req.body);
+        res.send("Restaurant Created")
+    }
 })
 
 // Delete a restaurant
@@ -129,7 +175,7 @@ app.delete('/restaurants/:id', async (req, res) => {
 })
 
 // Update a restaurant-put 
-//in postman body-raw and json
+//in postman app s.elect body-raw and json
 //or body -x-www-form-urlended and enter key-values
 app.put("/restaurants/:id", async (req, res) => {
 	let updated = await Restaurant.update(req.body, {
@@ -148,7 +194,73 @@ app.patch("/restaurants/:id", async (req, res) => {
 	res.send("Restaurant Updated Successfully!!")
 })
 
+//Menu -postman crud operations
+
+app.post('/menus', async (req, res) => {
+	let newMenu = await Menu.create(req.body);
+	res.send('Menu added Successfully!')
+})
+
+app.delete('/menus/:id', async (req, res) => {
+	await Menu.destroy({
+		where : {id : req.params.id} // Destory a menu where this object matches
+	})
+	res.send("Menu Deleted!!")
+})
+
+app.put("/menus/:id", async (req, res) => {
+	let updatedMenu = await Menu.update(req.body, {
+		where : {id : req.params.id} // Update a menu where the id matches, based on req.body
+	})
+	res.send("Menu Updated!!")
+})
+
+app.patch("/menus/:id", async (req, res) => {
+	let updatedMenu1 = await Menu.update(req.body, {
+		where : {id : req.params.id} // Update a menu where the id matches, based on req.body
+	})
+	res.send("Menu Updated Successfully!!")
+})
+
+//Item crud operations
+
+app.post('/items', async (req, res) => {
+	let newItem = await Item.create(req.body);
+	res.send('Item added Successfully!')
+})
+
+app.delete('/items/:id', async (req, res) => {
+	await Item.destroy({
+		where : {id : req.params.id} // Destory an item where this object matches
+	})
+	res.send("Oh! Item Deleted!!")
+})
+
+app.put("/items/:id", async (req, res) => {
+	let updatedItem = await Item.update(req.body, {
+		where : {id : req.params.id} // Update an item entity complelety where the id matches, based on req.body
+	})
+	res.send("Item Updated Successfully!!")
+})
+
+app.patch("/items/:id", async (req, res) => {
+	let updatedItem1 = await Item.update(req.body, {
+		where : {id : req.params.id} // Update an item particular property where the id matches, based on req.body
+	})
+	res.send("Item Updated Successfully!!")
+})
+
+
 //Q: What will our server be doing? listen to client request based on port 3000 created.
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
+
+
+
+//to run seed.js npm run seed  package json have "seed": "node seed"
+//to start server npm start   as package-json have "start":"node server.js"
+//to stop server ctrl+c
+//to run express-validator npm install express-validator or npm install --save express-validator and import express-validator
+//always start the server to test on postman app 
+    
